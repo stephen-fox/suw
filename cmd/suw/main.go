@@ -14,7 +14,7 @@ import (
 const (
 	getUpdatesArg    = "g"
 	installUpdateArg = "i"
-	verboseArg       = "-verbose"
+	verboseArg       = "verbose"
 	helpArg          = "h"
 )
 
