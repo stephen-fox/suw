@@ -1,0 +1,74 @@
+
+/*
+$ softwareupdate -l
+Software Update Tool
+
+Finding available software
+Software Update found the following new or updated software:
+   * iTunesX-12.7.3
+	iTunes (12.7.3), 264516K [recommended]
+
+####
+
+$ softwareupdate -i 'iTunesX-12.7.3'
+Software Update Tool
+
+
+Downloaded iTunes
+Installing iTunes
+Done with iTunes
+Done.
+
+####
+
+$ softwareupdate --verbose -i RAWCameraUpdate6.21-6.21
+Software Update Tool
+Copyright 2002-2015 Apple Inc.
+
+Downloading Digital Camera RAW Compatibility Update
+   Progress: 1%
+   Progress: 4%
+   Progress: 7%
+   Progress: 11%
+   Progress: 15%
+   Progress: 18%
+   Progress: 21%
+   Progress: 25%
+   Progress: 29%
+   Progress: 34%
+   Progress: 40%
+   Progress: 44%
+   Progress: 48%
+   Progress: 50%
+Downloaded Digital Camera RAW Compatibility Update
+Installing Digital Camera RAW Compatibility Update
+   Progress: 53%
+   Progress: 54%
+   Progress: 55%
+   Progress: 56%
+   Progress: 58%
+   Progress: 59%
+   Progress: 60%
+   Progress: 61%
+   Progress: 62%
+   Progress: 63%
+   Progress: 64%
+   Progress: 65%
+   Progress: 66%
+   Progress: 67%
+   Progress: 68%
+   Progress: 70%
+   Progress: 71%
+   Progress: 72%
+   Progress: 73%
+   Progress: 74%
+   Progress: 75%
+   Progress: 76%
+   Progress: 77%
+   Progress: 78%
+   Progress: 79%
+   Progress: 80%
+   Progress: 93%
+Done with Digital Camera RAW Compatibility Update
+Done.
+ */
