@@ -5,19 +5,24 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/stephen-fox/macosupdateutil"
 )
 
 const (
-	getUpdatesArg = "g"
-	helpArg       = "h"
+	getUpdatesArg    = "g"
+	installUpdateArg = "i"
+	verboseArg       = "-verbose"
+	helpArg          = "h"
 )
 
 var (
-	getUpdates = flag.Bool(getUpdatesArg, false, "Get available updates")
-
-	getHelp = flag.Bool(helpArg, false, "Print this help page")
+	getUpdates    = flag.Bool(getUpdatesArg, false, "Get available updates")
+	installUpdate = flag.String(installUpdateArg, "", "Install an update by name")
+	verbose       = flag.Bool(verboseArg, false, "Run verbose")
+	getHelp       = flag.Bool(helpArg, false, "Print this help page")
 )
 
 func main() {
@@ -35,7 +40,7 @@ func main() {
 		}
 
 		for _, u := range updates {
-			fmt.Println("Reference: '" + u.ReferenceName + "'")
+			fmt.Println("Name: '" + u.Name + "'")
 
 			fmt.Println("Application: '" + u.ApplicationName + "'")
 
@@ -53,5 +58,29 @@ func main() {
 
 			fmt.Println("Is restart needed:", u.IsRestartNeeded)
 		}
+	}
+
+	if len(strings.TrimSpace(*installUpdate)) > 0 {
+		if *verbose {
+			progress := make(chan int)
+
+			go func() {
+				for percent := range progress {
+					fmt.Println(strconv.Itoa(percent) + "%")
+				}
+			}()
+
+			err := macosupdateutil.InstallUpdateVerbose(*installUpdate, progress)
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+		} else {
+			err := macosupdateutil.InstallUpdate(*installUpdate)
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+		}
+
+		log.Println("Finished installing", *installUpdate)
 	}
 }
