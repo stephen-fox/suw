@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/stephen-fox/macosupdateutil"
+	"github.com/stephen-fox/suw"
 )
 
 const (
@@ -34,7 +34,7 @@ func main() {
 	}
 
 	if *getUpdates {
-		updates, err := macosupdateutil.GetUpdates()
+		updates, err := suw.GetUpdates()
 		if err != nil {
 			log.Fatal(err.Error())
 		}
@@ -70,12 +70,12 @@ func main() {
 				}
 			}()
 
-			err := macosupdateutil.InstallUpdateVerbose(*installUpdate, progress)
+			err := suw.InstallUpdateVerbose(*installUpdate, progress)
 			if err != nil {
 				log.Fatal(err.Error())
 			}
 		} else {
-			err := macosupdateutil.InstallUpdate(*installUpdate)
+			err := suw.InstallUpdate(*installUpdate)
 			if err != nil {
 				log.Fatal(err.Error())
 			}

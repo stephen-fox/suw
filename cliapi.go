@@ -1,4 +1,4 @@
-package macosupdateutil
+package suw
 
 import (
 	"bufio"
