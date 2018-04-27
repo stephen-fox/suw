@@ -9,7 +9,8 @@ import (
 const (
 	DefaultExecutablePath = executableParentPath + executableName
 
-	ErrorNoSuchUpdate = "The specified update does not exist"
+	ErrorNoSuchUpdate             = "The specified update does not exist"
+	ErrorUpdatesServerUnreachable = "The Apple updates server is unreachable"
 
 	executableParentPath  = "/usr/sbin/"
 	executableName        = "softwareupdate"

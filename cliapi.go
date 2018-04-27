@@ -12,6 +12,10 @@ import (
 	"github.com/stephen-fox/versionutil"
 )
 
+const (
+	errorNotConnectedToInternet = "Can’t connect to the Apple Software Update server, because you are not connected to the Internet."
+)
+
 type CliApi interface {
 	// SetExecutablePath sets the path to the softwareupdate executable.
 	SetExecutablePath(path string)
@@ -55,21 +59,29 @@ func (o *defaultCliApi) SetExecutablePath(path string) {
 func (o *defaultCliApi) Execute(args ...string) (output []string, err error) {
 	outputs := make(chan string)
 	var lines []string
+	var otherErr error
 	listen := true
 
 	go func() {
 		for listen {
 			line := <- outputs
 			lines = append(lines, line)
+
+			switch line {
+			case errorNotConnectedToInternet:
+				otherErr = errors.New(ErrorUpdatesServerUnreachable)
+			}
 		}
 	}()
 
 	err = o.ExecuteToChan(outputs, args...)
-
 	listen = false
-
 	if err != nil {
-		return []string{}, err
+		return lines, err
+	}
+
+	if otherErr != nil {
+		return lines, otherErr
 	}
 
 	return lines, nil
