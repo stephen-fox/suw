@@ -14,6 +14,15 @@ import (
 
 const (
 	errorNotConnectedToInternet = "Can’t connect to the Apple Software Update server, because you are not connected to the Internet."
+
+	updatePrefix        = "*"
+	updateDetailsPrefix = "\t"
+	progressPrefix      = "Progress: "
+	progressSuffix      = "%"
+
+	updateSizeSuffix    = "K"
+	restartRequired     = "[restart]"
+	noSuchUpdateSuffix  = "No such update"
 )
 
 type CliApi interface {
@@ -27,11 +36,11 @@ type CliApi interface {
 	// output to the specified channel.
 	ExecuteToChan(outputs chan string, args ...string) error
 
-	// GetApplicationName gets the application affected by an updated
+	// GetApplicationName gets the application affected by an update
 	// from softwareupdate output.
 	GetApplicationName(line string) string
 
-	// IsUpdate checks if the output from softwareupdate is a line, and
+	// IsUpdate checks if the output from softwareupdate is an update, and
 	// returns an Update representing it.
 	IsUpdate(line string, nextLine string) (bool, Update)
 
@@ -45,7 +54,7 @@ type CliApi interface {
 
 	// IsNoSuchUpdate returns true if the softwareupdate output states that
 	// no such update exists.
-	IsNoSuchUpdate(updateName string, line string) bool
+	IsNoSuchUpdate(line string) bool
 }
 
 type defaultCliApi struct {
@@ -58,19 +67,13 @@ func (o *defaultCliApi) SetExecutablePath(path string) {
 
 func (o *defaultCliApi) Execute(args ...string) (output []string, err error) {
 	outputs := make(chan string)
-	var lines []string
-	var otherErr error
 	listen := true
+	var lines []string
 
 	go func() {
 		for listen {
 			line := <- outputs
 			lines = append(lines, line)
-
-			switch line {
-			case errorNotConnectedToInternet:
-				otherErr = errors.New(ErrorUpdatesServerUnreachable)
-			}
 		}
 	}()
 
@@ -78,10 +81,6 @@ func (o *defaultCliApi) Execute(args ...string) (output []string, err error) {
 	listen = false
 	if err != nil {
 		return lines, err
-	}
-
-	if otherErr != nil {
-		return lines, otherErr
 	}
 
 	return lines, nil
@@ -107,6 +106,8 @@ func (o *defaultCliApi) ExecuteToChan(outputs chan string, args ...string) error
 		return err
 	}
 
+	var otherErr error
+
 	go func() {
 		scanner := bufio.NewScanner(combinedOutput)
 		lastLine := ""
@@ -120,6 +121,15 @@ func (o *defaultCliApi) ExecuteToChan(outputs chan string, args ...string) error
 
 			lastLine = line
 
+			switch line {
+			case errorNotConnectedToInternet:
+				otherErr = errors.New(ErrorUpdatesServerUnreachable)
+			default:
+				if o.IsNoSuchUpdate(line) {
+					otherErr = errors.New(ErrorNoSuchUpdate)
+				}
+			}
+
 			outputs <- line
 		}
 	}()
@@ -127,6 +137,10 @@ func (o *defaultCliApi) ExecuteToChan(outputs chan string, args ...string) error
 	err = command.Wait()
 	if err != nil {
 		return err
+	}
+
+	if otherErr != nil {
+		return otherErr
 	}
 
 	return nil
@@ -256,8 +270,8 @@ func (o *defaultCliApi) IsInstallProgress(line string) (bool, int) {
 	return false, 0
 }
 
-func (o *defaultCliApi) IsNoSuchUpdate(updateName string, line string) bool {
-	if strings.Contains(line, updateName) && strings.HasSuffix(line, noSuchUpdateSuffix) {
+func (o *defaultCliApi) IsNoSuchUpdate(line string) bool {
+	if strings.HasSuffix(line, noSuchUpdateSuffix) {
 		return true
 	}
 

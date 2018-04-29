@@ -1,8 +1,6 @@
 package suw
 
 import (
-	"errors"
-
 	"github.com/stephen-fox/versionutil"
 )
 
@@ -14,15 +12,6 @@ const (
 
 	executableParentPath  = "/usr/sbin/"
 	executableName        = "softwareupdate"
-
-	updatePrefix        = "*"
-	updateDetailsPrefix = "\t"
-	progressPrefix      = "Progress: "
-	progressSuffix      = "%"
-
-	updateSizeSuffix    = "K"
-	restartRequired     = "[restart]"
-	noSuchUpdateSuffix  = "No such update"
 
 	listUpdatesArg   = "-l"
 	installUpdateArg = "-i"
@@ -80,14 +69,8 @@ func InstallUpdate(updateName string) error {
 func InstallUpdateVerbose(updateName string, progressPercentages chan int) error {
 	outputs := make(chan string)
 
-	var noSuchUpdateErr error
-
 	go func() {
 		for line := range outputs {
-			if TargetCliApi.IsNoSuchUpdate(updateName, line) {
-				noSuchUpdateErr = errors.New(ErrorNoSuchUpdate)
-			}
-
 			if progressPercentages != nil {
 				isProgress, percent := TargetCliApi.IsInstallProgress(line)
 				if isProgress {
@@ -100,10 +83,6 @@ func InstallUpdateVerbose(updateName string, progressPercentages chan int) error
 	err := TargetCliApi.ExecuteToChan(outputs, verboseArg, installUpdateArg, updateName)
 	if err != nil {
 		return err
-	}
-
-	if noSuchUpdateErr != nil {
-		return noSuchUpdateErr
 	}
 
 	return nil
